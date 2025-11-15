@@ -1,4 +1,4 @@
-import { Time } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 
 interface Widget{
@@ -55,7 +55,7 @@ export class WidgetComponent implements OnInit {
     { name: 'Старая луна', emoji: '🌘', min: 22.38, max: 29.53 }
   ];
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
 
   ngOnInit() {
     this.getWeatherData();
@@ -71,13 +71,24 @@ export class WidgetComponent implements OnInit {
   }
 
   getWeatherData() {
-    // Временные данные для примера
-    setTimeout(() => {
+  const url = 'https://wttr.in/Moscow?format=j1';
+  
+  this.http.get(url).subscribe({
+    next: (data: any) => {
+      const current = data.current_condition[0];
       this.widgets[0].data = {
-        temperature: '+5°C',
-        description: 'Облачно'
+        temperature: `${current.temp_C}°C`,
+        description: current.weatherDesc[0].value,
       };
-    }, 1000);
+    },
+      error: (error) => {
+        console.log('Ошибка загрузки погоды:', error);
+        this.widgets[0].data = {
+          temperature: null,
+          description: null
+        };
+      }
+    });
   }
 
   startTimeUpdate() {
@@ -91,7 +102,6 @@ export class WidgetComponent implements OnInit {
   }
 
    getMoonPhase() {
-    // Точный расчет фазы луны на сегодня
     setTimeout(() => {
       const moonData = this.calculateMoonPhase(this.currentDate);
       this.widgets[2].data = moonData;
@@ -99,7 +109,7 @@ export class WidgetComponent implements OnInit {
   }
 
   calculateMoonPhase(date: Date): any {
-    const knownNewMoon = new Date('2024-01-11T00:00:00Z').getTime();
+    const knownNewMoon = new Date('2025-10-21T00:00:00Z').getTime();
     const currentTime = date.getTime();
     
     // Лунный цикл в миллисекундах (29.53 дней)
@@ -133,7 +143,6 @@ export class WidgetComponent implements OnInit {
     return this.moonPhases[0];
   }
 
-  // Описание фазы луны
   getPhaseDescription(phaseName: string): string {
     const descriptions: any = {
       'Новолуние': 'Луна не видна на небе',
