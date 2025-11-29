@@ -87,8 +87,12 @@ export function HttpLoaderFactory(http: HttpClient) {
     RsaComponent,
     MiniblogComponent,
     AddBlogModalComponent,
+<<<<<<< HEAD
     WaterTrackerComponent,
     GazonComponent,
+=======
+
+>>>>>>> db8bc8b9a7a89ffd0cc6df761c130f9d39a4043f
   ],
   imports: [
     CalcModule,
