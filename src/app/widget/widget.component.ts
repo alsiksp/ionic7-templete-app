@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AlertController, ActionSheetController } from '@ionic/angular';
+import { MoonService, MoonPhase } from './widget.service';
+import { Subscription } from 'rxjs';
 
 interface Widget {
   id: string
@@ -15,9 +17,12 @@ interface Widget {
   templateUrl: './widget.component.html',
   styleUrls: ['./widget.component.scss'],
 })
-export class WidgetComponent implements OnInit {
+export class WidgetComponent implements OnInit, OnDestroy {
   loc: any = {};
   currentDate: Date = new Date();
+  moonPhases: MoonPhase[] = [];
+  private moonSubscription!: Subscription;
+  private timeUpdateInterval: any;
 
   mainWidgets: Widget[] = [
     { 
@@ -44,29 +49,19 @@ export class WidgetComponent implements OnInit {
   ];
 
   customWidgets: Widget[] = [];
-   
-  moonPhases = [
-    { name: 'Новолуние', emoji: '🌑', min: 0, max: 1 },
-    { name: 'Молодая луна', emoji: '🌒', min: 1, max: 6.38 },
-    { name: 'Первая четверть', emoji: '🌓', min: 6.38, max: 8.38 },
-    { name: 'Прибывающая луна', emoji: '🌔', min: 8.38, max: 13.38 },
-    { name: 'Полнолуние', emoji: '🌕', min: 13.38, max: 15.38 },
-    { name: 'Убывающая луна', emoji: '🌖', min: 15.38, max: 20.38 },
-    { name: 'Последняя четверть', emoji: '🌗', min: 20.38, max: 22.38 },
-    { name: 'Старая луна', emoji: '🌘', min: 22.38, max: 29.53 }
-  ];
 
   constructor(
     private http: HttpClient,
     private alertController: AlertController,
-    private actionSheetController: ActionSheetController
+    private actionSheetController: ActionSheetController,
+    private moonService: MoonService
   ) { }
 
   ngOnInit() {
     this.getWeatherData();
     this.loadCustomWidgets();
     this.startTimeUpdate();
-    this.getMoonPhase();
+    this.loadMoonPhases();
     this.loc = {
       COMPONENT_TITLE: 'Виджеты',
       LOADING: 'Загрузка',
@@ -86,15 +81,54 @@ export class WidgetComponent implements OnInit {
     };
   }
 
+  ngOnDestroy() {
+    if (this.moonSubscription) {
+      this.moonSubscription.unsubscribe();
+    }
+    if (this.timeUpdateInterval) {
+      clearInterval(this.timeUpdateInterval);
+    }
+  }
+
+  loadMoonPhases() {
+    this.moonSubscription = this.moonService.getMoonPhases().subscribe({
+      next: (data) => {
+        this.moonPhases = data.moonPhases;
+        this.getMoonPhase();
+      },
+      error: (error) => {
+        console.error('Ошибка загрузки данных о фазах луны:', error);
+        this.moonPhases = [
+          { name: 'Новолуние', emoji: '🌑', min: 0, max: 1 },
+          { name: 'Полнолуние', emoji: '🌕', min: 13.38, max: 15.38 }
+        ];
+        this.getMoonPhase();
+      }
+    });
+  }
+
+getMoonPhase() {
+  if (this.moonPhases.length > 0) {
+    setTimeout(() => {
+      const moonData = this.moonService.calculateMoonPhase(this.currentDate, this.moonPhases);
+      console.log('Moon calculation:', {
+        date: this.currentDate,
+        moonAge: moonData.age,
+        phase: moonData.phase,
+        phases: this.moonPhases
+      });
+      this.mainWidgets[2].data = moonData;
+    }, 1000);
+  }
+}
+
   loadCustomWidgets() {
     const saved = localStorage.getItem('customWidgets');
     if (saved) {
       this.customWidgets = JSON.parse(saved);
       
-      // Восстанавливаем состояние секундомеров
       this.customWidgets.forEach(widget => {
         if (widget.type === 'stopwatch' && widget.data?.isRunning) {
-          // Если секундомер был запущен, перезапускаем его
           setTimeout(() => {
             this.startStopwatch(widget);
           }, 0);
@@ -108,7 +142,6 @@ export class WidgetComponent implements OnInit {
   }
 
   async addCustomWidget() {
-    // Сначала выбираем тип через action sheet
     const actionSheet = await this.actionSheetController.create({
       header: 'Выберите тип виджета',
       buttons: [
@@ -161,7 +194,6 @@ export class WidgetComponent implements OnInit {
       }
     ];
 
-    // Добавляем поле для контента только для текстовых виджетов
     if (type === 'notes' || type === 'basic') {
       inputs.push({
         name: 'content',
@@ -257,7 +289,6 @@ export class WidgetComponent implements OnInit {
     }
   }
 
-  // Методы для секундомера
   startStopwatch(widget: Widget) {
     if (widget.type === 'stopwatch') {
       if (!widget.data.isRunning) {
@@ -271,7 +302,6 @@ export class WidgetComponent implements OnInit {
           }
         };
 
-        // Обновляем время каждые 10 мс для плавности
         widget.data.intervalId = setInterval(updateTime, 10);
       }
     }
@@ -306,7 +336,6 @@ export class WidgetComponent implements OnInit {
         timestamp: Date.now()
       });
       
-      // Ограничиваем количество кругов до 20
       if (widget.data.laps.length > 20) {
         widget.data.laps = widget.data.laps.slice(0, 20);
       }
@@ -329,7 +358,6 @@ export class WidgetComponent implements OnInit {
     }
   }
 
-  // Методы для счетчика
   incrementCounter(widget: Widget) {
     if (widget.type === 'counter' && widget.data?.value !== undefined) {
       widget.data.value++;
@@ -352,7 +380,6 @@ export class WidgetComponent implements OnInit {
   }
 
   removeCustomWidget(widgetId: string) {
-    // Останавливаем секундомер если он запущен
     const widget = this.customWidgets.find(w => w.id === widgetId);
     if (widget && widget.type === 'stopwatch' && widget.data.isRunning) {
       this.stopStopwatch(widget);
@@ -384,63 +411,13 @@ export class WidgetComponent implements OnInit {
   }
 
   startTimeUpdate() {
-    setInterval(() => {
+    this.timeUpdateInterval = setInterval(() => {
       this.currentDate = new Date();
       this.mainWidgets[1].data = {
         time: this.currentDate.toLocaleTimeString(),
         date: this.currentDate.toLocaleDateString()
       };
     }, 1000);
-  }
-
-  getMoonPhase() {
-    setTimeout(() => {
-      const moonData = this.calculateMoonPhase(this.currentDate);
-      this.mainWidgets[2].data = moonData;
-    }, 1000);
-  }
-
-  calculateMoonPhase(date: Date): any {
-    const knownNewMoon = new Date('2025-10-21T00:00:00Z').getTime();
-    const currentTime = date.getTime();
-    
-    const lunarCycleMs = 29.53 * 24 * 60 * 60 * 1000;
-    const timeSinceNewMoon = currentTime - knownNewMoon;
-    
-    let moonAge = (timeSinceNewMoon % lunarCycleMs) / (24 * 60 * 60 * 1000);
-    if (moonAge < 0) moonAge += 29.53;
-    
-    const phase = this.determineMoonPhase(moonAge);
-    
-    return {
-      phase: phase.name,
-      emoji: phase.emoji,
-      age: Math.round(moonAge * 10) / 10 + ' ' + this.loc.DAYS,
-      description: this.getPhaseDescription(phase.name)
-    };
-  }
-
-  determineMoonPhase(moonAge: number): any {
-    for (let phase of this.moonPhases) {
-      if (moonAge >= phase.min && moonAge < phase.max) {
-        return phase;
-      }
-    }
-    return this.moonPhases[0];
-  }
-
-  getPhaseDescription(phaseName: string): string {
-    const descriptions: any = {
-      'Новолуние': 'Луна не видна на небе',
-      'Молодая луна': 'Тонкий серп после новолуния',
-      'Первая четверть': 'Освещена половина лунного диска',
-      'Прибывающая луна': 'Луна продолжает расти',
-      'Полнолуние': 'Луна полностью освещена',
-      'Убывающая луна': 'Луна начинает уменьшаться',
-      'Последняя четверть': 'Освещена вторая половина диска',
-      'Старая луна': 'Тонкий серп перед новолунием'
-    };
-    return descriptions[phaseName] || 'Фаза луны';
   }
 
   getCurrentTime(): string {
