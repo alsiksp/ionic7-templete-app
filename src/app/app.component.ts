@@ -1,9 +1,6 @@
 import { Component } from '@angular/core';
 import { register } from 'swiper/element/bundle';
 import { TranslateService } from '@ngx-translate/core';
-// import { title } from 'process';
-// import { url } from 'inspector';
-// import { Icon } from 'ionicons/dist/types/components/icon/icon';
 
 register();
 
@@ -25,6 +22,7 @@ export class AppComponent {
     { title: 'Kanban', url: '/kanban', icon: 'albums' },
     { title: 'Recipes', url: '/recipes', icon: 'pizza' },
     { title: 'Mood calendar', url: '/mood-calendar', icon: 'calendar' },
+    { title: 'widget', url: '/widget', icon: 'finger-print' },    
     { title: 'CRYPTO_MODULE.COMPONENT_TITLE', url: '/cryptorates', icon: 'cash' },
     { title: 'News', url: '/rss-data', icon: 'newspaper' },
     { title: 'Notes', url: '/notes', icon: 'create' },

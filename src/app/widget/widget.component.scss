@@ -1,0 +1,258 @@
+.widgets-container {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.widget-card {
+  margin: 0;
+  border-radius: 12px;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  
+  ion-card-header {
+    padding: 12px 12px 8px 12px;
+    flex-shrink: 0;
+    
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95em;
+      font-weight: 600;
+    }
+  }
+
+  ion-card-content {
+    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+/* Кастомный заголовок для пользовательских виджетов */
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 12px 8px 12px;
+  flex-shrink: 0;
+  
+  .widget-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    
+    .title-text {
+      font-size: 0.95em;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+.widget-icon {
+  font-size: 18px;
+  color: var(--ion-color-primary);
+}
+
+/* Стили для кнопки удаления */
+.delete-btn {
+  --padding-start: 4px;
+  --padding-end: 4px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  margin: 0;
+  
+  ion-icon {
+    font-size: 16px;
+  }
+}
+
+/* Стили для основных виджетов */
+.weather-widget {
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  
+  .weather-data {
+    h2 {
+      font-size: 1.8em;
+      margin: 4px 0;
+      color: var(--ion-color-primary);
+      font-weight: bold;
+    }
+    
+    p {
+      margin: 4px 0;
+      font-size: 0.9em;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+.time-widget {
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  
+  .time-display {
+    font-size: 2em;
+    margin: 4px 0;
+    font-weight: bold;
+    color: var(--ion-color-dark);
+  }
+  
+  .date-display {
+    font-size: 1em;
+    color: var(--ion-color-medium);
+    margin: 4px 0;
+  }
+}
+
+.moon-widget {
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  
+  .moon-data {
+    .moon-emoji {
+      font-size: 3em;
+      margin: 4px 0;
+      line-height: 1;
+    }
+    
+    h3 {
+      font-size: 1.1em;
+      margin: 4px 0;
+      color: var(--ion-color-primary);
+      font-weight: 600;
+    }
+    
+    .moon-description {
+      font-style: italic;
+      color: var(--ion-color-medium);
+      margin: 4px 0 8px 0;
+      font-size: 0.85em;
+    }
+    
+    .moon-details {
+      text-align: center;
+      background: var(--ion-color-light);
+      padding: 8px;
+      border-radius: 6px;
+      
+      p {
+        margin: 2px 0;
+        font-size: 0.85em;
+      }
+    }
+  }
+}
+
+/* Стили для контента пользовательских виджетов */
+.widget-content {
+  text-align: center;
+  font-size: 0.9em;
+  line-height: 1.4;
+  white-space: pre-line;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading {
+  text-align: center;
+  color: var(--ion-color-medium);
+  font-style: italic;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9em;
+}
+
+/* Стили для кастомных виджетов */
+.custom-widget {
+  border-left: 4px solid var(--ion-color-primary);
+  background: var(--ion-color-light);
+  
+  ion-card-content {
+    padding-top: 4px;
+  }
+}
+
+.add-widget-card {
+  border: 2px dashed var(--ion-color-medium);
+  background: var(--ion-color-light);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: var(--ion-color-primary);
+    background: var(--ion-color-light-tint);
+  }
+  
+  .add-widget-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    
+    .add-icon {
+      font-size: 2.5em;
+      color: var(--ion-color-medium);
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+    }
+    
+    p {
+      margin: 0;
+      color: var(--ion-color-medium);
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+  }
+  
+  &:hover .add-icon {
+    color: var(--ion-color-primary);
+    transform: scale(1.1);
+  }
+}
+
+.alert-radio-group {
+  border-top: 1px solid var(--ion-color-light);
+}
+
+.alert-radio-label {
+  white-space: normal !important;
+}
+
+.content-input {
+  margin-top: 16px;
+  
+  .alert-input {
+    min-height: 100px;
+  }
+}

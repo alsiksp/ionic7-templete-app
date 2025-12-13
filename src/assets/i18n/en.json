@@ -46,6 +46,7 @@
   "Загрузка": "Loading",
   "Shopping": "Shopping",
   "RSA": "RSA encription",
+  "widget": "Widgets",
 
   "Recipes": "Recipes",
   "News": "News",
@@ -107,6 +108,23 @@
     "NOTES_MISSING": "Notes are missing",
     "DELETE_MARKED_NOTES": "Delete all marked notes"
   },
+    "WIDGET":{
+    "COMPONENT_TITLE": "Widget",
+    "LOADING": "Loading",
+    "MOON_PHASE": "Phase",
+    "MOON_AGE": "Moon age",
+    "ADD_WIDGET": "Add widget",
+    "DAYS": "Days",
+    "INCREMENT": "+",
+    "DECREMENT": "-",
+    "RESET": "Reset",
+    "START": "Start",
+    "STOP": "Stop",
+    "LAP": "Lap",
+    "CLEAR": "Clear",
+    "TIME": "Time",
+    "LAPS": "Laps"
+    },
   "GAZON": {
     "MENU": "Format Converter"
   },
