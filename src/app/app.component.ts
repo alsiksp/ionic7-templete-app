@@ -22,7 +22,7 @@ export class AppComponent {
     { title: 'Kanban', url: '/kanban', icon: 'albums' },
     { title: 'Recipes', url: '/recipes', icon: 'pizza' },
     { title: 'Mood calendar', url: '/mood-calendar', icon: 'calendar' },
-    { title: 'widget', url: '/widget', icon: '' },    
+    { title: 'widget', url: '/widget', icon: 'finger-print' },    
     { title: 'CRYPTO_MODULE.COMPONENT_TITLE', url: '/cryptorates', icon: 'cash' },
     { title: 'News', url: '/rss-data', icon: 'newspaper' },
     { title: 'Notes', url: '/notes', icon: 'create' },
