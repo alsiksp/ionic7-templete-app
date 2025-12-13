@@ -102,5 +102,22 @@
     "TEXT_NOTES": "Текст заметки",
     "NOTES_MISSING": "Заметки отсутствуют",
     "DELETE_MARKED_NOTES": "Удалить все выделенные заметки"
+  },
+  "WIDGET":{
+    "COMPONENT_TITLE": "Виджеты",
+    "LOADING": "Загрузка",
+    "MOON_PHASE": "Фаза",
+    "MOON_AGE": "Возраст луны",
+    "ADD_WIDGET": "Добавить виджет",
+    "DAYS": "дней",
+    "INCREMENT": "+",
+    "DECREMENT": "-",
+    "RESET": "Сброс",
+    "START": "Старт",
+    "STOP": "Стоп",
+    "LAP": "Круг",
+    "CLEAR": "Очистить",
+    "TIME": "Время",
+    "LAPS": "Круги"
   }
 }

@@ -1,17 +1,20 @@
-// moon.service.spec.ts
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { MoonService, MoonPhase } from './widget.service';
+import { MoonService } from './widget.service';
 
 describe('MoonService', () => {
   let service: MoonService;
   let httpMock: HttpTestingController;
 
-  const mockMoonPhases = {
+  const mockData = {
     moonPhases: [
       { name: 'Новолуние', emoji: '🌑', min: 0, max: 1 },
       { name: 'Полнолуние', emoji: '🌕', min: 13.38, max: 15.38 }
-    ]
+    ],
+    descriptions: {
+      'Новолуние': 'Луна не видна на небе',
+      'Полнолуние': 'Луна полностью освещена'
+    },
   };
 
   beforeEach(() => {
@@ -31,28 +34,40 @@ describe('MoonService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('getMoonPhases', () => {
-    it('should return moon phases from JSON file', () => {
-      service.getMoonPhases().subscribe(phases => {
-        expect(phases).toEqual(mockMoonPhases);
-      });
-
-      const req = httpMock.expectOne('assets/data/moon-phases.json');
-      expect(req.request.method).toBe('GET');
-      req.flush(mockMoonPhases);
+  it('should load widget data', (done) => {
+    service.loadWidgetData().subscribe(data => {
+      expect(data.moonPhases.length).toBe(2);
+      expect(data.locale.COMPONENT_TITLE).toBe('Виджеты');
+      done();
     });
+
+    const req = httpMock.expectOne('assets/sample-data/moon-data.json');
+    req.flush(mockData);
   });
 
-  describe('calculateMoonPhase', () => {
-    it('should calculate moon phase with provided moon phases data', () => {
-      const testDate = new Date('2024-01-15T00:00:00Z');
-      const moonData = service.calculateMoonPhase(testDate, mockMoonPhases.moonPhases);
-      
-      expect(moonData).toBeDefined();
-      expect(moonData.phase).toBeDefined();
-      expect(moonData.emoji).toBeDefined();
-      expect(moonData.age).toContain('дней');
-      expect(moonData.description).toBeDefined();
+  it('should calculate moon phase', (done) => {
+    service.calculateMoonPhase(new Date('2024-01-15T00:00:00Z')).subscribe(data => {
+      expect(data.phase).toBe('Новолуние');
+      expect(data.emoji).toBe('🌑');
+      expect(data.age).toContain('дней');
+      expect(data.description).toBe('Луна не видна на небе');
+      done();
     });
+
+    const req = httpMock.expectOne('assets/sample-data/moon-data.json');
+    req.flush(mockData);
+  });
+
+  it('should throw error when data loading fails', (done) => {
+    service.calculateMoonPhase(new Date()).subscribe({
+      next: () => fail('Should have thrown error'),
+      error: (error) => {
+        expect(error).toBeDefined();
+        done();
+      }
+    });
+
+    const req = httpMock.expectOne('assets/sample-data/moon-data.json');
+    req.error(new ErrorEvent('Network error'));
   });
 });

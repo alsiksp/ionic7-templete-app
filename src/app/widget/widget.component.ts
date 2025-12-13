@@ -1,8 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AlertController, ActionSheetController } from '@ionic/angular';
-import { MoonService, MoonPhase } from './widget.service';
+import { MoonService } from './widget.service';
 import { Subscription } from 'rxjs';
+
+interface Widget {
+  id: string
+  title: string
+  data: any
+  type: 'basic' | 'counter' | 'notes' | 'stopwatch'
+  icon: string
+}
 
 interface Widget {
   id: string
@@ -20,10 +28,7 @@ interface Widget {
 export class WidgetComponent implements OnInit, OnDestroy {
   loc: any = {};
   currentDate: Date = new Date();
-  moonPhases: MoonPhase[] = [];
-  private moonSubscription!: Subscription;
-  private timeUpdateInterval: any;
-
+  
   mainWidgets: Widget[] = [
     { 
       id: 'weather', 
@@ -49,6 +54,10 @@ export class WidgetComponent implements OnInit, OnDestroy {
   ];
 
   customWidgets: Widget[] = [];
+  private moonSubscription!: Subscription;
+  private weatherSubscription!: Subscription;
+  private timeUpdateInterval: any;
+  isLoading: boolean = true;
 
   constructor(
     private http: HttpClient,
@@ -58,82 +67,83 @@ export class WidgetComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.getWeatherData();
     this.loadCustomWidgets();
+    this.loadAllData();
     this.startTimeUpdate();
-    this.loadMoonPhases();
-    this.loc = {
-      COMPONENT_TITLE: 'Виджеты',
-      LOADING: 'Загрузка',
-      MOON_PHASE: 'Фаза',
-      MOON_AGE: 'Возраст луны',
-      ADD_WIDGET: 'Добавить виджет',
-      DAYS: 'дней',
-      INCREMENT: '+',
-      DECREMENT: '-',
-      RESET: 'Сброс',
-      START: 'Старт',
-      STOP: 'Стоп',
-      LAP: 'Круг',
-      CLEAR: 'Очистить',
-      TIME: 'Время',
-      LAPS: 'Круги'
-    };
   }
 
   ngOnDestroy() {
     if (this.moonSubscription) {
       this.moonSubscription.unsubscribe();
     }
+    if (this.weatherSubscription) {
+      this.weatherSubscription.unsubscribe();
+    }
     if (this.timeUpdateInterval) {
       clearInterval(this.timeUpdateInterval);
     }
   }
 
-  loadMoonPhases() {
-    this.moonSubscription = this.moonService.getMoonPhases().subscribe({
-      next: (data) => {
-        this.moonPhases = data.moonPhases;
+
+  private loadAllData() {
+    this.isLoading = true;
+    
+    this.moonSubscription = this.moonService.getLocale().subscribe({
+      next: (locale) => {
+        this.loc = locale;
+        this.getWeatherData();
         this.getMoonPhase();
+        this.isLoading = false;
       },
       error: (error) => {
-        console.error('Ошибка загрузки данных о фазах луны:', error);
-        this.moonPhases = [
-          { name: 'Новолуние', emoji: '🌑', min: 0, max: 1 },
-          { name: 'Полнолуние', emoji: '🌕', min: 13.38, max: 15.38 }
-        ];
-        this.getMoonPhase();
+        console.error('Error loading locale:', error);
+        this.isLoading = false;
       }
     });
   }
 
-getMoonPhase() {
-  if (this.moonPhases.length > 0) {
-    setTimeout(() => {
-      const moonData = this.moonService.calculateMoonPhase(this.currentDate, this.moonPhases);
-      console.log('Moon calculation:', {
-        date: this.currentDate,
-        moonAge: moonData.age,
-        phase: moonData.phase,
-        phases: this.moonPhases
-      });
-      this.mainWidgets[2].data = moonData;
-    }, 1000);
+  private loadWidgetData() {
+    this.moonSubscription = this.moonService.loadWidgetData().subscribe({
+      next: (data: any) => {
+        this.loc = data.locale;
+        this.getWeatherData();
+        this.getMoonPhase();
+      },
+      error: (error: any) => {
+        console.error('Ошибка загрузки данных:', error);
+        this.getWeatherData();
+      }
+    });
   }
-}
+
+  getMoonPhase() {
+    this.moonService.calculateMoonPhase(this.currentDate).subscribe({
+      next: (moonData) => {
+        this.mainWidgets[2].data = moonData;
+      },
+      error: (error) => {
+        console.error('Error calculating moon phase:', error);
+      }
+    });
+  }
 
   loadCustomWidgets() {
     const saved = localStorage.getItem('customWidgets');
     if (saved) {
-      this.customWidgets = JSON.parse(saved);
-      
-      this.customWidgets.forEach(widget => {
-        if (widget.type === 'stopwatch' && widget.data?.isRunning) {
-          setTimeout(() => {
-            this.startStopwatch(widget);
-          }, 0);
-        }
-      });
+      try {
+        this.customWidgets = JSON.parse(saved);
+        
+        this.customWidgets.forEach(widget => {
+          if (widget.type === 'stopwatch' && widget.data?.isRunning) {
+            setTimeout(() => {
+              this.startStopwatch(widget);
+            }, 0);
+          }
+        });
+      } catch (error) {
+        console.error('Error loading custom widgets:', error);
+        this.customWidgets = [];
+      }
     }
   }
 
@@ -392,13 +402,14 @@ getMoonPhase() {
   getWeatherData() {
     const url = 'https://wttr.in/Moscow?format=j1';
     
-    this.http.get(url).subscribe({
+    this.weatherSubscription = this.http.get(url).subscribe({
       next: (data: any) => {
         const current = data.current_condition[0];
         this.mainWidgets[0].data = {
           temperature: `${current.temp_C}°C`,
           description: current.weatherDesc[0].value,
         };
+        console.log('Weather data loaded:', this.mainWidgets[0].data);
       },
       error: (error) => {
         console.log('Ошибка загрузки погоды:', error);
@@ -417,6 +428,10 @@ getMoonPhase() {
         time: this.currentDate.toLocaleTimeString(),
         date: this.currentDate.toLocaleDateString()
       };
+
+      if (new Date().getSeconds() === 0) {
+        this.getMoonPhase();
+      }
     }, 1000);
   }
 
