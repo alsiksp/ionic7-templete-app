@@ -40,6 +40,11 @@
   "Birthday": "Birthday",
   "Address": "Address",
   "Marriage": "Marriage",
+  "Курсы криптовалют": "Crypto rates",
+  "Время": "Time",
+  "Цена": "Pice",
+  "Загрузка": "Loading",
+  "widget": "Widgets",
   "News": "News",
   "Save": "Save",
   "Shopping": "Shopping list",
@@ -166,17 +171,32 @@
     "MAP_WITH_POINT_TEXT": "This is a map with a marker via code and click coordinate handling."
   },
   
-  "GAZON": {
-    "MENU": "Format converter"
-  },
-  "calc": {
-    "name": "Calculator"
-  },
-  "CALCULATOR": {
-    "TITLE": "Calculator",
-    "BASIC": "Basic",
-    "ADVANCED": "Advanced"
-  },
+    "WIDGET":{
+    "COMPONENT_TITLE": "Widget",
+    "LOADING": "Loading",
+    "MOON_PHASE": "Phase",
+    "MOON_AGE": "Moon age",
+    "ADD_WIDGET": "Add widget",
+    "DAYS": "Days",
+    "INCREMENT": "+",
+    "DECREMENT": "-",
+    "RESET": "Reset",
+    "START": "Start",
+    "STOP": "Stop",
+    "LAP": "Lap",
+    "CLEAR": "Clear",
+    "TIME": "Time",
+    "LAPS": "Laps"
+    },
+      "calc": {
+      "name": "Сalculator"
+    },
+    
+    "CALCULATOR": {
+      "TITLE": "Calculator",
+      "BASIC": "Basic",
+      "ADVANCED": "Advanced"
+    },
   "FORM": {
     "TITLE": "Form with calculator integration",
     "SUBTITLE": "Use the calculator to fill in the fields",
@@ -191,6 +211,10 @@
     "SUBTITLE": "Calculate value and click \"Apply\"",
     "APPLY_BUTTON": "Apply result",
     "CLOSE_BUTTON": "Close"
+  },
+    "GAZON":{
+    "MENU": "Format Converter",
+    "TITLE": "Format Converter"
   }
 
   ,"DEVELOPMENT": {

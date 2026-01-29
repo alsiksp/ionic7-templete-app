@@ -1,0 +1,137 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{"WIDGET.COMPONENT_TITLE" | translate}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>{{"WIDGET.LOADING" | translate}}</p>
+  </div>
+
+  <div class="widgets-container" *ngIf="!isLoading">
+    <ng-container *ngFor="let widget of mainWidgets">
+      <ion-card class="widget-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon [name]="widget.icon" class="widget-icon"></ion-icon>
+            {{ widget.title }}
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <!-- Погода -->
+          <div *ngIf="widget.id === 'weather'" class="weather-widget">
+            <div *ngIf="widget.data.temperature" class="weather-data">
+              <h2>{{ widget.data.temperature }}</h2>
+              <p>{{ widget.data.description }}</p>
+            </div>
+            <div *ngIf="!widget.data.temperature" class="loading">
+              {{"WIDGET.LOADING" | translate}}
+            </div>
+          </div>
+
+          <!-- Время -->
+          <div *ngIf="widget.id === 'time'" class="time-widget">
+            <h2 class="time-display">{{ widget.data.time }}</h2>
+            <p class="date-display">{{ widget.data.date }}</p>
+          </div>
+
+          <!-- Фаза луны -->
+          <div *ngIf="widget.id === 'moon'" class="moon-widget">
+            <div *ngIf="widget.data.phase" class="moon-data">
+              <div class="moon-emoji">{{ widget.data.emoji }}</div>
+              <h3>{{ widget.data.phase }}</h3>
+              <p class="moon-description">{{ widget.data.description }}</p>
+              <div class="moon-details">
+                <p><strong>{{"WIDGET.MOON_AGE" | translate}}:</strong> {{ widget.data.age }}</p>
+              </div>
+            </div>
+            <div *ngIf="!widget.data.phase" class="loading">
+              {{"WIDGET.LOADING" | translate}}
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+    <ion-card class="widget-card add-widget-card" (click)="addCustomWidget()">
+      <ion-card-content class="add-widget-content">
+        <ion-icon name="add" class="add-icon"></ion-icon>
+        <p>{{"WIDGET.ADD_WIDGET" | translate}}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ng-container *ngFor="let widget of customWidgets">
+      <ion-card class="widget-card custom-widget">
+        <div class="widget-header">
+          <div class="widget-title">
+            <ion-icon [name]="widget.icon" class="widget-icon"></ion-icon>
+            <span class="title-text">{{ widget.title }}</span>
+          </div>
+          <ion-button 
+            fill="clear" 
+            color="danger" 
+            size="small" 
+            (click)="removeCustomWidget(widget.id)" 
+            class="delete-btn">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <ion-card-content>
+          <div *ngIf="widget.type === 'counter'" class="counter-widget">
+            <div class="counter-value">
+              <h2>{{ widget.data.value }}</h2>
+            </div>
+            <div class="counter-controls">
+              <ion-button size="small" (click)="decrementCounter(widget)">
+                {{"WIDGET.DECREMENT" | translate}}
+              </ion-button>
+              <ion-button size="small" (click)="resetCounter(widget)" color="medium">
+                {{"WIDGET.RESET" | translate}}
+              </ion-button>
+              <ion-button size="small" (click)="incrementCounter(widget)">
+                {{"WIDGET.INCREMENT" | translate}}
+              </ion-button>
+            </div>
+          </div>
+
+          <div *ngIf="widget.type === 'notes' || widget.type === 'basic'" class="text-widget">
+            <div class="widget-content">
+              {{ widget.data.content }}
+            </div>
+          </div>
+
+          <div *ngIf="widget.type === 'stopwatch'" class="stopwatch-widget">
+            <div class="stopwatch-display">
+              <h2>{{ formatTime(widget.data.time) }}</h2>
+            </div>
+            <div class="stopwatch-controls">
+              <ion-button size="small" (click)="lapStopwatch(widget)" [disabled]="!widget.data.isRunning">
+                {{"WIDGET.LAP" | translate}}
+              </ion-button>
+              <ion-button *ngIf="!widget.data.isRunning" size="small" (click)="startStopwatch(widget)" color="success">
+                {{"WIDGET.START" | translate}}
+              </ion-button>
+              <ion-button *ngIf="widget.data.isRunning" size="small" (click)="stopStopwatch(widget)" color="warning">
+                {{"WIDGET.STOP" | translate}}
+              </ion-button>
+              <ion-button size="small" (click)="resetStopwatch(widget)" color="medium">
+                {{"WIDGET.CLEAR" | translate}}
+              </ion-button>
+            </div>
+            <div *ngIf="widget.data.laps.length > 0" class="laps-section">
+              <h4>{{"WIDGET.LAPS" | translate}}:</h4>
+              <div class="lap-item" *ngFor="let lap of widget.data.laps">
+                <span class="lap-number">Круг {{lap.number}}</span>
+                <span class="lap-time">{{lap.time}}</span>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+  </div>
+</ion-content>

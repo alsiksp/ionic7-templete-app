@@ -9,10 +9,10 @@ import { GazonComponent } from './gazon.component';
 @NgModule({
   imports: [
     CommonModule,
-    FormsModule,
+    FormsModule, 
     IonicModule,
     GazonRoutingModule
-  ],
+  ],  
   declarations: [GazonComponent]
 })
 export class GazonModule {}

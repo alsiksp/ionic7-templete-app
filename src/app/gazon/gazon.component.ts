@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+
 
 @Component({
   selector: 'app-gazon',
   templateUrl: './gazon.component.html',
   styleUrls: ['./gazon.component.scss']
 })
-export class GazonComponent {
+export class GazonComponent implements OnInit {
   selectedFile: File | null = null;
   sourceFormat: string = '';
   targetFormat: string = '';
@@ -14,6 +16,17 @@ export class GazonComponent {
   downloadUrl: string = '';
   isLoading: boolean = false;
   isDragOver: boolean = false;
+  autoDownloadEnabled: boolean = true; // по умолчанию включено
+  showDownloadButton: boolean = false; // показывать ли кнопку скачивания
+  isFirstConversion: boolean = true; // это первая конвертация?
+
+  // ключи для хранения настроек
+  private readonly TARGET_FORMAT_KEY = 'gazon_converter_target_format';
+  private readonly AUTO_DOWNLOAD_KEY = 'gazon_auto_download_enabled';
+  private readonly IS_FIRST_CONVERSION_KEY = 'gazon_is_first_conversion';
+
+  // таймер для отложенной автоматической конвертации
+  private autoConvertTimer: any = null;
 
   // поддерживаемые форматы для конвертации
   readonly supportedFormats = [
@@ -21,6 +34,13 @@ export class GazonComponent {
     'ico', 'tiff', 'svg', 'avif', 'heic', 'pdf', 
     'doc', 'docx', 'txt', 'rtf'
   ];
+
+    constructor(private translate: TranslateService) { }
+
+  ngOnInit(): void {
+    console.log('компонент инициализирован');
+    this.loadAllSettings();
+  }
 
   // обработчик выбора файла
   onFileSelected(event: Event): void {
@@ -59,6 +79,28 @@ export class GazonComponent {
     this.detectSourceFormat(file);
     this.conversionResult = null;
     this.downloadUrl = '';
+    this.showDownloadButton = false;
+    
+    // загружаем сохраненные настройки
+    this.loadAllSettings();
+    
+    // если автоскачивание включено и выбран целевой формат - запускаем автоматическую конвертацию
+    if (this.autoDownloadEnabled && this.targetFormat && this.targetFormat.trim() !== '') {
+      this.startAutoConversion();
+    }
+  }
+
+  // запуск автоматической конвертации
+  private startAutoConversion(): void {
+    // очищаем предыдущий таймер, если есть
+    if (this.autoConvertTimer) {
+      clearTimeout(this.autoConvertTimer);
+    }
+    
+    // запускаем конвертацию через небольшую задержку (500 мс = 0.5 секунды)
+    this.autoConvertTimer = setTimeout(() => {
+      this.convertFile();
+    }, 500);
   }
 
   // расчет размера файла в читаемом формате
@@ -99,7 +141,7 @@ export class GazonComponent {
       return;
     }
 
-    // если расширение неопределено, пробуем определить по MIME type
+    // если расширение неопределено, пробуем определить по mime type
     if (file.type) {
       const mimeFormat = this.getFormatFromMimeType(file.type);
       if (mimeFormat) {
@@ -112,7 +154,7 @@ export class GazonComponent {
     this.sourceFormat = '';
   }
 
-  // определение формата по MIME type
+  // определение формата по mime type
   private getFormatFromMimeType(mimeType: string): string | null {
     const mimeToFormat: { [key: string]: string } = {
       'image/jpeg': 'jpg',
@@ -140,12 +182,19 @@ export class GazonComponent {
 
   // очистка выбранного файла
   clearFile(): void {
+    // очищаем таймер, если есть
+    if (this.autoConvertTimer) {
+      clearTimeout(this.autoConvertTimer);
+      this.autoConvertTimer = null;
+    }
+    
     this.selectedFile = null;
     this.fileSize = '';
     this.sourceFormat = '';
-    this.targetFormat = '';
     this.conversionResult = null;
     this.downloadUrl = '';
+    this.showDownloadButton = false;
+    this.isLoading = false;
     this.isDragOver = false;
     
     // сброс значения input file
@@ -155,21 +204,109 @@ export class GazonComponent {
     }
   }
 
+  // загрузка всех сохраненных настроек
+  private loadAllSettings(): void {
+    try {
+      // загружаем целевой формат
+      const savedFormat = localStorage.getItem(this.TARGET_FORMAT_KEY);
+      if (savedFormat && savedFormat.trim() !== '') {
+        this.targetFormat = savedFormat;
+      } else {
+        this.targetFormat = '';
+      }
+
+      // загружаем настройку автоскачивания
+      const savedAutoDownload = localStorage.getItem(this.AUTO_DOWNLOAD_KEY);
+      if (savedAutoDownload !== null) {
+        this.autoDownloadEnabled = savedAutoDownload === 'true';
+      }
+
+      // загружаем статус первой конвертации
+      const savedFirstConversion = localStorage.getItem(this.IS_FIRST_CONVERSION_KEY);
+      if (savedFirstConversion !== null) {
+        this.isFirstConversion = savedFirstConversion === 'true';
+      } else {
+        // если не сохранено, значит это первая конвертация
+        this.isFirstConversion = true;
+        this.saveToLocalStorage(this.IS_FIRST_CONVERSION_KEY, 'true');
+      }
+      
+    } catch (error) {
+      console.error('ошибка при чтении настроек:', error);
+    }
+  }
+
+  // сохранение целевого формата
+  private saveTargetFormat(format: string): void {
+    if (!format || format.trim() === '') {
+      return;
+    }
+    this.saveToLocalStorage(this.TARGET_FORMAT_KEY, format);
+  }
+
+  // сохранение настройки автоскачивания
+  private saveAutoDownloadSetting(enabled: boolean): void {
+    this.saveToLocalStorage(this.AUTO_DOWNLOAD_KEY, enabled.toString());
+  }
+
+  // сохранение статуса первой конвертации
+  private saveFirstConversionStatus(isFirst: boolean): void {
+    this.saveToLocalStorage(this.IS_FIRST_CONVERSION_KEY, isFirst.toString());
+  }
+
+  // общий метод сохранения в localStorage
+  private saveToLocalStorage(key: string, value: string): void {
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.error(`ошибка при сохранении ${key}:`, error);
+    }
+  }
+
+  // обработчик изменения целевого формата пользователем
+  onTargetFormatChange(format: string): void {
+    if (format && format.trim() !== '') {
+      this.targetFormat = format;
+      this.saveTargetFormat(format);
+      
+      // если автоскачивание включено и уже есть выбранный файл - запускаем автоматическую конвертацию
+      if (this.autoDownloadEnabled && this.selectedFile && this.sourceFormat) {
+        this.startAutoConversion();
+      }
+    }
+  }
+
+  // обработчик изменения настройки автоскачивания
+  onAutoDownloadChange(enabled: boolean): void {
+    this.autoDownloadEnabled = enabled;
+    this.saveAutoDownloadSetting(enabled);
+    
+    // если автоскачивание включили и уже есть выбранный файл с форматом - запускаем конвертацию
+    if (enabled && this.selectedFile && this.sourceFormat && this.targetFormat) {
+      this.startAutoConversion();
+    }
+  }
+
   // основная функция конвертации
   async convertFile(): Promise<void> {
     if (!this.selectedFile || !this.sourceFormat || !this.targetFormat) {
-      this.showError('Ошибка: заполните все поля');
+      this.showError('ошибка: заполните все поля');
       return;
     }
 
     // проверка на одинаковые форматы
     if (this.sourceFormat === this.targetFormat) {
-      this.showError('Ошибка: исходный и целевой форматы не могут быть одинаковыми');
+      this.showError('ошибка: исходный и целевой форматы не могут быть одинаковыми');
       return;
     }
 
+    // сохраняем выбранный целевой формат
+    this.saveTargetFormat(this.targetFormat);
+
     this.isLoading = true;
     this.conversionResult = null;
+    this.downloadUrl = '';
+    this.showDownloadButton = false;
 
     try {
       let convertedBlob: Blob;
@@ -180,20 +317,37 @@ export class GazonComponent {
       } else if (this.isTextFile(this.sourceFormat)) {
         convertedBlob = await this.convertText(this.selectedFile, this.targetFormat);
       } else {
-        throw new Error(`Конвертация из ${this.sourceFormat} в ${this.targetFormat} пока не поддерживается (либо не будет поддерживаться)`);
+        throw new Error(`конвертация из ${this.sourceFormat} в ${this.targetFormat} пока не поддерживается`);
       }
 
-      // создаем URL для скачивания
+      // создаем url для скачивания
       this.downloadUrl = URL.createObjectURL(convertedBlob);
       
       this.conversionResult = {
         success: true,
-        message: `Файл "${this.selectedFile.name}" успешно сконвертирован из ${this.sourceFormat.toUpperCase()} в ${this.targetFormat.toUpperCase()}!`
+        message: `файл "${this.selectedFile.name}" успешно сконвертирован из ${this.sourceFormat.toUpperCase()} в ${this.targetFormat.toUpperCase()}!`
       };
+
+      // определяем, нужно ли автоматически скачивать
+      if (this.autoDownloadEnabled && !this.isFirstConversion) {
+        // автоскачивание включено и это не первая конвертация - скачиваем автоматически
+        this.downloadConvertedFile();
+      } else {
+        // показываем кнопку скачивания только если автоскачивание выключено
+        if (!this.autoDownloadEnabled) {
+          this.showDownloadButton = true;
+        }
+      }
+
+      // если это была первая конвертация - сохраняем, что теперь это уже не первая
+      if (this.isFirstConversion) {
+        this.isFirstConversion = false;
+        this.saveFirstConversionStatus(false);
+      }
       
     } catch (error) {
-      console.error('Ошибка конвертации:', error);
-      this.showError('Ошибка при конвертации файла. Убедитесь, что файл корректен.');
+      console.error('ошибка конвертации:', error);
+      this.showError('ошибка при конвертации файла. убедитесь, что файл корректен.');
     } finally {
       this.isLoading = false;
     }
@@ -214,7 +368,7 @@ export class GazonComponent {
   // конвертация изображений
   private convertImage(file: File, targetFormat: string): Promise<Blob> {
     return new Promise((resolve, reject) => {
-      // для SVG используем текстовую конвертацию
+      // для svg используем текстовую конвертацию
       if (targetFormat.toLowerCase() === 'svg') {
         this.convertToSvg(file).then(resolve).catch(reject);
         return;
@@ -224,7 +378,7 @@ export class GazonComponent {
       const ctx = canvas.getContext('2d');
       
       if (!ctx) {
-        reject(new Error('Canvas не поддерживается в этом браузере'));
+        reject(new Error('canvas не поддерживается в этом браузере'));
         return;
       }
 
@@ -252,20 +406,20 @@ export class GazonComponent {
           if (blob) {
             resolve(blob);
           } else {
-            reject(new Error('Не удалось сконвертировать изображение'));
+            reject(new Error('не удалось сконвертировать изображение'));
           }
         }, formatSettings.mimeType, formatSettings.quality);
       };
 
       img.onerror = () => {
-        reject(new Error('Не удалось загрузить изображение'));
+        reject(new Error('не удалось загрузить изображение'));
       };
 
       img.src = URL.createObjectURL(file);
     });
   }
 
-  // конвертация в SVG (упрощенная)
+  // конвертация в svg (упрощенная)
   private async convertToSvg(file: File): Promise<Blob> {
     return new Promise((resolve) => {
       const img = new Image();
@@ -342,7 +496,7 @@ export class GazonComponent {
       link.click();
       document.body.removeChild(link);
       
-      // очистка URL после скачивания
+      // очистка url после скачивания
       setTimeout(() => {
         URL.revokeObjectURL(this.downloadUrl);
       }, 100);

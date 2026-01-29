@@ -1,9 +1,6 @@
 import { Component } from '@angular/core';
 import { register } from 'swiper/element/bundle';
 import { TranslateService } from '@ngx-translate/core';
-// import { title } from 'process';
-// import { url } from 'inspector';
-// import { Icon } from 'ionicons/dist/types/components/icon/icon';
 
 register();
 
@@ -25,6 +22,8 @@ export class AppComponent {
     { title: 'KANBAN.COMPONENT_TITLE', url: '/kanban', icon: 'albums' },
     { title: 'RECIPES.COMPONENT_TITLE', url: '/recipes', icon: 'pizza' },
     { title: 'MOODCALENDAR.COMPONENT_TITLE', url: '/mood-calendar', icon: 'calendar' },
+    { title: 'Miniblog', url: '/miniblog', icon: 'book' },
+    { title: 'widget', url: '/widget', icon: 'finger-print' },    
     { title: 'CRYPTO_MODULE.COMPONENT_TITLE', url: '/cryptorates', icon: 'cash' },
     { title: 'NEWS.COMPONENT_TITLE', url: '/rss-data', icon: 'newspaper' },
     { title: 'NOTES.COMPONENT_TITLE', url: '/notes', icon: 'create' },
@@ -51,6 +50,7 @@ export class AppComponent {
       icon: 'battery-full-outline',
     },
     { title: 'User', url: '/user', icon: '' },
+    { title: 'Contact card', url: '/contact-card', icon: '' },
     // Добавляем поле для перехода на страницу пометок
     {
       title: 'DEVELOPMENT.COMPONENTS',
@@ -58,7 +58,6 @@ export class AppComponent {
       icon: '',
     },
     { title: 'Water-tracker', url: '/water-tracker', icon: 'water' },    
-    { title: 'Contact card', url: '/contact-card', icon: '' },    
     { title: 'Inbox', url: '/folder/inbox', icon: 'входящие' },
     { title: 'Deals', url: '/deals', icon: '' },
     { title: 'Fashion', url: '/fashion', icon: '' },

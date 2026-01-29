@@ -9,6 +9,13 @@
   margin-bottom: 20px;
 }
 
+.settings-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
 .welcome-title {
   display: flex;
   align-items: center;
@@ -17,7 +24,7 @@
   
   // добавляем отступ для иконки
   ion-icon {
-    margin-right: 12px; // увеличиваем расстояние между иконкой и текстом
+    margin-right: 12px;
   }
 }
 
@@ -158,6 +165,20 @@
   font-weight: 600;
 }
 
+// бейдж конвертации
+.converting-badge {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+  font-size: 11px;
+  color: #3880ff;
+  font-weight: 500;
+  
+  ion-spinner {
+    margin-right: 5px;
+  }
+}
+
 .file-input {
   display: none;
 }
@@ -227,7 +248,7 @@
 
 // адаптивность для телефонов
 @media (max-width: 768px) {
-  .welcome-card {
+  .welcome-card, .settings-card {
     margin: 0 -16px;
     border-radius: 0;
   }
@@ -260,6 +281,44 @@
     .file-icon {
       font-size: 24px;
       margin-right: 12px;
+    }
+  }
+}
+
+// стили для чекбокса автоскачивания
+.auto-download-item {
+  margin-top: 15px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  
+  h3 {
+    font-weight: 600;
+    margin: 0 0 3px;
+    color: #333;
+  }
+  
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 12px;
+  }
+}
+
+// стиль для сообщения об автоскачивании
+.result-message {
+  ion-card-content {
+    p {
+      display: flex;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 14px;
+      color: #2dd36f;
+      
+      ion-icon {
+        margin-right: 8px;
+      }
     }
   }
 }

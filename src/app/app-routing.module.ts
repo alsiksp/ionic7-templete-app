@@ -13,7 +13,11 @@ import { IntroComponent } from './intro/intro.component';
 import { RecipesComponent } from './recipes/recipes.component';
 import { BarcodeScannerComponent } from './barcode-scanner/barcode-scanner.component';
 import { TermsOfServiceComponent } from "./terms-of-service/terms-of-service.component"
-import { FrontLayoutComponent } from "./front-layout/front-layout.component"
+import {FrontLayoutComponent} from "./front-layout/front-layout.component"
+import {CameraComponent} from './camera/camera.component';
+import { WidgetModule } from "./widget/widget.module"
+
+
 import { VideoPlayerComponent } from './videoplayer/videoplayer.component';
 import { DealsComponent } from './deals/deals.component';
 import { MoodCalendarComponent } from './mood-calendar/mood-calendar.component';
@@ -59,16 +63,17 @@ const routes: Routes = [
     loadChildren: () => import('./signup/signup.module').then(m => m.SignUpPageModule)
   },
   {
-    path: 'forgot-password',
-    component: ForgotPasswordComponent
-  },
-  {
-    path: 'calc',
-    loadChildren: () => import('./calc/calc.module').then(m => m.CalcModule)
+    path: '',
+    redirectTo: 'front-layout',
+    pathMatch: 'full'
   },
   {
     path:'maps',
     component: MapsComponent
+  },
+  {
+      path: 'calc',
+    loadChildren: () => import('./calc/calc.module').then(m => m.CalcModule)
   },
   {
     path: 'folder/:id',
@@ -161,6 +166,18 @@ const routes: Routes = [
   {
     path: 'barcode-scanner',
     component: BarcodeScannerComponent
+  },
+  {
+    path: 'contact-card',
+    component: ContactCardComponent
+  },
+  {
+    path: 'widget',
+  loadChildren: () => import('./widget/widget.module').then( m => m.WidgetModule)
+  },
+  {
+    path: 'forgot-password',
+    loadChildren: () => import('./forgot-password/forgot-password-routing.module').then( m => m.ForgotPasswordPageRoutingModule)
   },
   {
     path: 'recipes',
